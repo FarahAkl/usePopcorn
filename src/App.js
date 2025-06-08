@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const tempMovieData = [
   {
@@ -47,22 +47,56 @@ const tempWatchedData = [
   },
 ];
 
+const KEY = process.env.REACT_APP_API_KEY;
+
 const average = (arr) =>
   arr.reduce((acc, cur, i, arr) => acc + cur / arr.length, 0);
 
 export default function App() {
-  const [ movies, setMovies ] = useState(tempMovieData);
-  const [ watched, setWatched ] = useState(tempWatchedData);
+  const [movies, setMovies] = useState(tempMovieData);
+  const [watched, setWatched] = useState(tempWatchedData);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const query = "interstellar";
+
+  useEffect(() => {
+    async function fetchMovies() {
+      setIsLoading(true);
+      try {
+        const res = await fetch(
+          `https://www.omdbapi.com/?i=tt3896198&apikey=${KEY}&s=${query}`
+        );
+
+        if (!res.ok)
+          throw new Error("Something went wrong with fetching movies");
+
+        const data = await res.json();
+
+        if (data.Response === "False")
+          throw new Error("Movie not Found");
+
+        setMovies(data.Search);
+      } catch (err) {
+        setError(err.message);
+        console.error(err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    fetchMovies();
+  }, []);
 
   return (
     <>
       <NavBar>
         <Search />
-        <NumResutls movies={movies} />
+        <NumResults movies={movies} />
       </NavBar>
       <Main>
         <Box>
-          <MovieList movies={movies} />
+          {isLoading && <Loader />}
+          {!isLoading && !error && <MovieList movies={movies} />}
+          {error && <ErrorMessage message={error} />}
         </Box>
         <Box>
           <WatchedSummary watched={watched} />
@@ -105,10 +139,10 @@ function Search() {
   );
 }
 
-function NumResutls({ movies }) {
+function NumResults({ movies }) {
   return (
     <p className="num-results">
-      Found <strong>{movies.length}</strong> results
+      Found <strong>{movies?.length}</strong> results
     </p>
   );
 }
@@ -171,6 +205,14 @@ function Movie({ movie }) {
       </Details>
     </li>
   );
+}
+
+function Loader() {
+  return <p className="loader">Loading ...</p>;
+}
+
+function ErrorMessage({ message }) {
+  return <p className="error">{message}</p>;
 }
 
 function WatchedSummary({ watched }) {
