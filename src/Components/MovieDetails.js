@@ -1,0 +1,109 @@
+import { useState, useEffect } from 'react'
+import StarRating from './StarRating';
+import Loader from "../App"
+import ErrorMessage from './ErrorMessage';
+
+
+const KEY = process.env.REACT_APP_API_KEY;
+
+export default function MovieDetails({ selectedId, onCloseMovie, onAddWatched }) {
+  const [movie, setMovie] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const {
+    Title: title,
+    Year: year,
+    Poster: poster,
+    imdbRating,
+    Runtime: runtime,
+    Plot: plot,
+    Released: released,
+    Actors: actors,
+    Director: director,
+    Genre: genre,
+  } = movie;
+
+  function handleAdd() {
+    const newMovie = {
+      imdbID: selectedId,
+      title,
+      year,
+      poster,
+      imdbRating: Number(imdbRating),
+      runtime: runtime.split(" ").at(0),
+    };
+    onAddWatched(newMovie);
+    onCloseMovie();
+  }
+
+  useEffect(() => {
+    async function getMovieDetails() {
+      setLoading(true);
+      try {
+        const res = await fetch(
+          `https://www.omdbapi.com/?i=${selectedId}&apikey=${KEY}`
+        );
+
+        if (!res.ok)
+          throw new Error("Something went wrong with fetching movie details");
+
+        const data = await res.json();
+
+        if (data.Response === "False") throw new Error("Movie not Found");
+
+        setMovie(data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+    getMovieDetails();
+  }, [selectedId]);
+
+  return (
+    <div className="details">
+      {loading & !error ? (
+        <Loader />
+      ) : error ? (
+        <ErrorMessage message={error} />
+      ) : (
+        <>
+          <header>
+            <button className="btn-back" onClick={onCloseMovie}>
+              &larr;
+            </button>
+            <img src={poster} alt={`Poster of ${movie}`} />
+            <div className="details-overview">
+              <h2>{title}</h2>
+              <p>
+                {released} &bull; {runtime}
+              </p>
+              <p>{genre}</p>
+              <p>
+                <span>⭐️</span>
+                {imdbRating} IMDb rating
+              </p>
+            </div>
+          </header>
+
+          <section>
+            <div className="rating">
+              <StarRating maxRating={10} size={24} key={selectedId} />
+              <button className="btn-add" onClick={handleAdd}>
+                + Add to list
+              </button>
+            </div>
+
+            <p>
+              <em>{plot}</em>
+            </p>
+            <p>Starring {actors}</p>
+            <p>Directed by {director}</p>
+          </section>
+        </>
+      )}
+    </div>
+  );
+}
