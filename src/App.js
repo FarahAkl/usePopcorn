@@ -31,6 +31,20 @@ export default function App() {
     setWatched((watched) => watched.filter((movie) => movie.imdbID !== id));
   }
 
+  const callback = (e) => {
+    if (e.code === "Escape") {
+      handleCloseMovie();
+    }
+  };
+
+  useEffect(() => {
+    document.addEventListener("keydown", callback);
+
+    return () => {
+      document.removeEventListener("keydown", callback);
+    };
+  }, [handleCloseMovie]);
+
   useEffect(() => {
     const controller = new AbortController();
 
@@ -51,10 +65,9 @@ export default function App() {
         if (data.Response === "False") throw new Error("Movie not Found");
 
         setMovies(data.Search);
-        setError("")
+        setError("");
       } catch (err) {
-        if(error.name !== "AbortError")
-        setError(err.message);
+        if (error.name !== "AbortError") setError(err.message);
       } finally {
         setIsLoading(false);
       }
@@ -65,6 +78,8 @@ export default function App() {
       setError("");
       return;
     }
+    
+    handleCloseMovie()
 
     fetchMovies();
 
