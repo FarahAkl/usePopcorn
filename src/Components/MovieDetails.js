@@ -70,10 +70,20 @@ export default function MovieDetails({
         setError(err.message);
       } finally {
         setLoading(false);
-      }
+        }
+        
     }
     getMovieDetails();
   }, [selectedId]);
+
+  useEffect(() => {
+    if (!title) return;
+    document.title = `Movie | ${title}`;
+
+    return () => {
+      document.title = "usePopcorn";
+    };
+  }, [title]);
 
   return (
     <div className="details">
