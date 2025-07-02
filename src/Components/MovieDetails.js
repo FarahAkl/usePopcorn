@@ -1,15 +1,24 @@
-import { useState, useEffect } from 'react'
-import StarRating from './StarRating';
-import Loader from "../App"
-import ErrorMessage from './ErrorMessage';
-
+import { useState, useEffect } from "react";
+import StarRating from "./StarRating";
+import Loader from "./Loader";
+import ErrorMessage from "./ErrorMessage";
 
 const KEY = process.env.REACT_APP_API_KEY;
 
-export default function MovieDetails({ selectedId, onCloseMovie, onAddWatched }) {
+export default function MovieDetails({
+  selectedId,
+  onCloseMovie,
+  onAddWatched,
+  watched,
+}) {
   const [movie, setMovie] = useState({});
+  const [userRating, setUserRating] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const watchedUserRating = watched.find(
+    (movie) => movie.imdbID === selectedId
+  )?.userRating;
 
   const {
     Title: title,
@@ -24,6 +33,8 @@ export default function MovieDetails({ selectedId, onCloseMovie, onAddWatched })
     Genre: genre,
   } = movie;
 
+  const isWatched = watched.map((movie) => movie.imdbID).includes(selectedId);
+
   function handleAdd() {
     const newMovie = {
       imdbID: selectedId,
@@ -31,8 +42,10 @@ export default function MovieDetails({ selectedId, onCloseMovie, onAddWatched })
       year,
       poster,
       imdbRating: Number(imdbRating),
-      runtime: runtime.split(" ").at(0),
+      runtime: Number(runtime.split(" ").at(0)),
+      userRating,
     };
+
     onAddWatched(newMovie);
     onCloseMovie();
   }
@@ -90,10 +103,23 @@ export default function MovieDetails({ selectedId, onCloseMovie, onAddWatched })
 
           <section>
             <div className="rating">
-              <StarRating maxRating={10} size={24} key={selectedId} />
-              <button className="btn-add" onClick={handleAdd}>
-                + Add to list
-              </button>
+              {!isWatched ? (
+                <>
+                  <StarRating
+                    maxRating={10}
+                    size={24}
+                    key={selectedId}
+                    onSetRating={setUserRating}
+                  />
+                  {userRating > 0 && (
+                    <button className="btn-add" onClick={handleAdd}>
+                      + Add to list
+                    </button>
+                  )}
+                </>
+              ) : (
+                <p>You rated with movie {watchedUserRating}</p>
+              )}
             </div>
 
             <p>
