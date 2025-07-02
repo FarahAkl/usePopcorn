@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import MovieDetails from "./Components/MovieDetails"
+import MovieDetails from "./Components/MovieDetails";
 import Loader from "./Components/Loader";
 import ErrorMessage from "./Components/ErrorMessage";
 import WatchedMovie from "./Components/WatchedMovie";
@@ -25,6 +25,10 @@ export default function App() {
 
   function handleAddWatched(movie) {
     setWatched((watched) => [...watched, movie]);
+  }
+
+  function handleDeleteWatched(id) {
+    setWatched((watched) => watched.filter((movie) => movie.imdbID !== id));
   }
 
   useEffect(() => {
@@ -81,14 +85,17 @@ export default function App() {
           {!selectedId ? (
             <>
               <WatchedSummary watched={watched} />
-              <WatchedMoviesList watched={watched} />
+              <WatchedMoviesList
+                watched={watched}
+                onHandleDelete={handleDeleteWatched}
+              />
             </>
           ) : (
             <MovieDetails
-                selectedId={selectedId}
-                onCloseMovie={handleCloseMovie}
-                onAddWatched={handleAddWatched}
-                watched={ watched}
+              selectedId={selectedId}
+              onCloseMovie={handleCloseMovie}
+              onAddWatched={handleAddWatched}
+              watched={watched}
             />
           )}
         </Box>
@@ -181,11 +188,15 @@ function Movie({ movie, handleSelectedMovie }) {
   );
 }
 
-function WatchedMoviesList({ watched }) {
+function WatchedMoviesList({ watched, onHandleDelete }) {
   return (
     <ul className="list">
       {watched.map((movie) => (
-        <WatchedMovie movie={movie} key={movie.imdbID}/>
+        <WatchedMovie
+          movie={movie}
+          key={movie.imdbID}
+          onHandleDelete={onHandleDelete}
+        />
       ))}
     </ul>
   );
