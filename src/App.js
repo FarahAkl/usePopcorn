@@ -9,11 +9,16 @@ const KEY = process.env.REACT_APP_API_KEY;
 
 export default function App() {
   const [movies, setMovies] = useState([]);
-  const [watched, setWatched] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [query, setQuery] = useState("");
   const [selectedId, setSelectedId] = useState(null);
+  // const [ watched, setWatched ] = useState([]);
+
+  const [watched, setWatched] = useState(() => {
+    const storedValue = localStorage.getItem("watched");
+    return JSON.parse(storedValue);
+  });
 
   function handleSelectedMovie(id) {
     setSelectedId((i) => (i === id ? null : id));
@@ -36,6 +41,10 @@ export default function App() {
       handleCloseMovie();
     }
   };
+
+  useEffect(() => {
+    localStorage.setItem("watched", JSON.stringify(watched));
+  }, [watched]);
 
   useEffect(() => {
     document.addEventListener("keydown", callback);
@@ -78,8 +87,8 @@ export default function App() {
       setError("");
       return;
     }
-    
-    handleCloseMovie()
+
+    handleCloseMovie();
 
     fetchMovies();
 
