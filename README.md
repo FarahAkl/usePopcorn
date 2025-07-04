@@ -23,7 +23,7 @@
 
 ```
     git clone "https://github.com/FarahAkl/usePopcorn.git"
-    cd usepopcorn
+    cd usePopcorn
 ```
 2. **Install dependencies:**
 
@@ -32,7 +32,7 @@
 ```
 3. **Add your OMDb API key:**
 
-Create a .env file in the root folder:
+  *Create a .env file in the root folder:*
 
 ```
 REACT_APP_OMDB_KEY= your_api_key_here
