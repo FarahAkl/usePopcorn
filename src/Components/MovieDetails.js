@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import StarRating from "./StarRating";
 import Loader from "./Loader";
 import ErrorMessage from "./ErrorMessage";
@@ -15,6 +15,12 @@ export default function MovieDetails({
   const [userRating, setUserRating] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const countRef = useRef(0);
+
+  useEffect(() => {
+    if (userRating) countRef.current++;
+  }, [userRating]);
 
   const watchedUserRating = watched.find(
     (movie) => movie.imdbID === selectedId
@@ -44,6 +50,7 @@ export default function MovieDetails({
       imdbRating: Number(imdbRating),
       runtime: Number(runtime.split(" ").at(0)),
       userRating,
+      countRatingDecisions: countRef.current,
     };
 
     onAddWatched(newMovie);
@@ -70,8 +77,7 @@ export default function MovieDetails({
         setError(err.message);
       } finally {
         setLoading(false);
-        }
-        
+      }
     }
     getMovieDetails();
   }, [selectedId]);
