@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import MovieDetails from "./Components/MovieDetails";
 import Loader from "./Components/Loader";
 import ErrorMessage from "./Components/ErrorMessage";
@@ -100,7 +100,11 @@ export default function App() {
   return (
     <>
       <NavBar>
-        <Search query={query} setQuery={setQuery} />
+        <Search
+          query={query}
+          setQuery={setQuery}
+          handleCloseMovie={handleCloseMovie}
+        />
         <NumResults movies={movies} />
       </NavBar>
       <Main>
@@ -155,11 +159,37 @@ function Logo() {
   );
 }
 
-function Search({ query, setQuery }) {
+function Search({ query, setQuery, handleCloseMovie }) {
+  // Manually select element without using useRef()
+  // useEffect(() => {
+  //   const el = document.querySelector('.search')
+  //   el.focus()
+  // },[])
+
+  const inputEl = useRef(null);
+
   useEffect(() => {
-    const el = document.querySelector('.search')
-    el.focus()
-  },[])
+    inputEl.current.focus();
+  }, []);
+
+  useEffect(() => {
+    const callback = (e) => {
+
+      if (document.activeElement === inputEl.current) return;
+
+      if (e.code === "Enter") {
+        inputEl.current.focus();
+        setQuery("");
+        handleCloseMovie();
+      }
+    };
+
+    document.addEventListener("keydown", callback);
+
+    return () => {
+      document.removeEventListener("keydown", callback);
+    };
+  }, [handleCloseMovie, setQuery]);
 
   return (
     <input
@@ -168,6 +198,7 @@ function Search({ query, setQuery }) {
       placeholder="Search movies..."
       value={query}
       onChange={(e) => setQuery(e.target.value)}
+      ref={inputEl}
     />
   );
 }
