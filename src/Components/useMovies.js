@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import {useEffect, useState } from "react";
 
 const KEY = process.env.REACT_APP_API_KEY;
 
